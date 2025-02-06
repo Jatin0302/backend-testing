@@ -1,68 +1,29 @@
-"use strict";
+'use strict';
 
-const fs = require("fs");
-const path = require("path");
-const Sequelize = require("sequelize");
-const process = require("process");
+const fs = require('fs');
+const path = require('path');
+const Sequelize = require('sequelize');
 const basename = path.basename(__filename);
-const env = process.env.NODE_ENV || "development";
-const config = require(__dirname + "/../config/config.json")[env];
 const db = {};
 
-let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
-} else {
-  sequelize = new Sequelize(
-    config.database,
-    config.username,
-    config.password,
-    config
-  );
-}
+const sequelize = new Sequelize("overview", "root", "this.admin", {
+    host: "localhost",
+    dialect: "mysql",
+});
 
-const { sequelize, DataTypes } = require("sequelize");
-
-// Import models
-const UserModel = require("./user");
-const CountryModel = require("./country");
-
-// Initialize models
-const User = UserModel(sequelize, DataTypes);
-const Country = CountryModel(sequelize, DataTypes);
-
-// Define associations
-User.belongsTo(Country, { foreignKey: 'countryId', as: 'Country' });  // A user belongs to a country
-Country.hasMany(User, { foreignKey: 'countryId', as: 'Users' });  // A country has many users
-
-// Export models
-module.exports = {
-  User,
-  Country,
-  sequelize,
-};
-
+// Read all model files and initialize them
 fs.readdirSync(__dirname)
-  .filter((file) => {
-    return (
-      file.indexOf(".") !== 0 &&
-      file !== basename &&
-      file.slice(-3) === ".js" &&
-      file.indexOf(".test.js") === -1
-    );
-  })
-  .forEach((file) => {
-    const model = require(path.join(__dirname, file))(
-      sequelize,
-      Sequelize.DataTypes
-    );
-    db[model.name] = model;
-  });
+    .filter(file => file.indexOf('.') !== 0 && file !== basename && file.slice(-3) === '.js')
+    .forEach(file => {
+        const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
+        db[model.name] = model;
+    });
 
-Object.keys(db).forEach((modelName) => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-  }
+// Initialize associations after all models are loaded
+Object.keys(db).forEach(modelName => {
+    if (db[modelName].associate) {
+        db[modelName].associate(db);
+    }
 });
 
 db.sequelize = sequelize;

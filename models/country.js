@@ -1,39 +1,47 @@
-const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('country', {
-    id: {
-      autoIncrement: true,
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true
-    },
-    vCountryName: {
-      type: DataTypes.STRING(50),
-      allowNull: false
-    },
-    vCountryCode: {
-      type: DataTypes.STRING(20),
-      allowNull: false
-    },
-    iMarketSize: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      comment: "Market size for the country"
-    }
-  }, {
-    sequelize,
-    tableName: 'country',
-    timestamps: true,
-    paranoid: true,
-    indexes: [
-      {
-        name: "PRIMARY",
-        unique: true,
-        using: "BTREE",
-        fields: [
-          { name: "id" },
-        ]
+module.exports = (sequelize, DataTypes) => {
+  const Country = sequelize.define(
+    "Country",
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
       },
-    ]
-  });
+      vCountryName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      vCountryCode: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      iMarketSize: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        comment: 'Market size for the country',
+      },
+      created_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      deleted_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      }
+    },
+    {
+      tableName: "Country",
+      timestamps: false,
+    }
+  );
+
+  Country.associate = (models) => {
+    Country.hasMany(models.User, { foreignKey: "iCountryId", as: "users" });
+  };
+
+  return Country;
 };
